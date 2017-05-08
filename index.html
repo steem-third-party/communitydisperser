@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        
+        <h1 id="UserHeader"></h1>
+        <title>Community Disperser!</title>
+        <ul id="UserSteemData"><h1>User Information:</h1></ul>
+        <center>
+        <style>
+            #zone_chat strong {
+                color: white;
+                background-color: black;
+                padding: 2px;
+            }
+        </style>
+
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+        <script src="./steem.min.js"></script>
+    </head>
+ 
+    <body>
+        
+        <h1>Community Disperser!</h1>
+
+        <form action="/" method="post" id="userlist_form">
+            <input type="text" name="message" id="message" placeholder="Users to send to..." size="50" autofocus />
+            <input type="text" name="amount" id="amount" placeholder="The amount of steem to send to every user..." size="40" autofocus />
+            <input type="text" name="memo" id="memo" placeholder="The memo to include with every transfer..." size="40" autofocus />
+            <input type="submit" id="send_message" value="Send" />
+        </form>
+
+        <section id="result_zone">
+            
+        </section>
+    </center>
+
+
+                       
+        <script>
+
+            
+
+            // The username and activekey is requested, stored in the var username and displayed in the title
+            var username = prompt('What\'s your username?');
+            
+            var activekey =prompt('What\'s your active key?');
+            
+            document.title = username + ' - ' + document.title;
+
+            steem.api.lookupAccountNames([username], function(err, result) {
+                //console.log(err, result);
+            });
+            
+            // When the form is sent, the message is sent and displayed on the page
+            $('#userlist_form').submit(function () {
+                var message = $('#message').val();
+                var amount = $('#amount').val();
+                var memo = $('#memo').val();
+                var TOKEN = " STEEM";
+
+                insertMessage(username, message, amount); // Also displays the message on our page
+                $('#message').val('').focus(); // Empties the chat form and puts the focus back on it
+
+                //console.log(message);
+
+                var userdispersallist = message.split(',');
+                //console.log(userdispersallist);
+                $.each(userdispersallist, function (index, value){
+                    /*steem.broadcast.transfer(activekey, username, "steemstars-gtc", "1.000 STEEM", "testing", function(err,   result) {
+                    console.log(err, result);
+                    });*/
+                    steem.broadcast.transfer(activekey, username, value, amount.concat(TOKEN), memo, function(err, result) {
+                    console.log(err, result);
+                    console.log(err, value);
+                    $('#result_zone').prepend('<p><em>' + JSON.stringify(result) + '</em></p>');
+                    });
+                
+                //console.log(amount);
+                });
+                return false; // Blocks 'classic' sending of the form
+            });
+            
+            steem.api.getAccounts([username], function(err, response){
+                
+                $('#UserSteemData').append('<li>' + "Username: " + response[0].name + '</li>');
+                $('#UserSteemData').append('<li>' + "Memo Key: " + response[0].memo_key + '</li>');
+                $('#UserSteemData').append('<li>' + "Steem Balance: " + response[0].balance + '</li>');
+                
+            });
+
+            // Adds a message to the page
+            function insertMessage(username, message) {
+                $('#result_zone').prepend('<p><strong>' + username + '</strong> ' + message + amount + '</p>');
+            };
+
+            
+        </script>
+    </body>
+</html>
