@@ -17,12 +17,23 @@
 
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 
+        <!--Remove comment and comment out other source to use node modules lib
+        <script src="./node_modules/steem/dist/steem.min.js"></script>
+        -->
         <script src="./steem.min.js"></script>
+
     </head>
  
     <body>
+
+        <img src="./steemthirdparty.png"></img>
         
         <h1>Community Disperser!</h1>
+
+        <p>The username list does not need @ symbols for usernames also remove any spaces and use , to seperate them.</p>
+
+        <h2>Example:</h2>
+        <p>giftedgaia,papa-pepper,good-karma,winstonwolfe</p>
 
         <form action="/" method="post" id="userlist_form">
             <input type="text" name="message" id="message" placeholder="Users to send to..." size="50" autofocus />
@@ -35,12 +46,10 @@
             
         </section>
     </center>
-
-
-                       
+    <br/>
+    <br/>
+    <p>All appreciation to Fabien @adcpm for the steem js lib.</p>
         <script>
-
-            
 
             // The username and activekey is requested, stored in the var username and displayed in the title
             var username = prompt('What\'s your username?');
@@ -49,50 +58,71 @@
             
             document.title = username + ' - ' + document.title;
 
-            steem.api.lookupAccountNames([username], function(err, result) {
-                //console.log(err, result);
+            steem.config.set('websocket','wss://node.steem.ws');
+
+
+            steem.api.getAccounts([username], function(err, response){
+
+                if(response[0] != null) {
+                    $('#UserSteemData').append('<li>' + "Username: " + response[0].name + '</li>');
+                    $('#UserSteemData').append('<li>' + "Memo Key: " + response[0].memo_key + '</li>');
+                    $('#UserSteemData').append('<li>' + "Steem Balance: " + response[0].balance + '</li>');
+                }
+                else {
+                    $('#result_zone').prepend('<p><em>' + "That is not a valid username, please use your steem username." + '</em></p>');
+                };
             });
+
             
-            // When the form is sent, the message is sent and displayed on the page
+            
+            // When the form is fired, the results are validated and then displayed on the page.
             $('#userlist_form').submit(function () {
                 var message = $('#message').val();
                 var amount = $('#amount').val();
                 var memo = $('#memo').val();
                 var TOKEN = " STEEM";
 
-                insertMessage(username, message, amount); // Also displays the message on our page
-                $('#message').val('').focus(); // Empties the chat form and puts the focus back on it
+                
 
-                //console.log(message);
+                insertMessage(username, message, amount, memo);
+                // Empties the input forms and puts the focus back on the user input field.
+                $('#amount').val('');
+                $('#memo').val('');
+                $('#message').val('').focus(); 
 
                 var userdispersallist = message.split(',');
-                //console.log(userdispersallist);
+                
                 $.each(userdispersallist, function (index, value){
                     /*steem.broadcast.transfer(activekey, username, "steemstars-gtc", "1.000 STEEM", "testing", function(err,   result) {
                     console.log(err, result);
                     });*/
-                    steem.broadcast.transfer(activekey, username, value, amount.concat(TOKEN), memo, function(err, result) {
-                    console.log(err, result);
-                    console.log(err, value);
-                    $('#result_zone').prepend('<p><em>' + JSON.stringify(result) + '</em></p>');
+                    steem.api.lookupAccountNames([value], function(err, lookupresult) {
+
+                        console.log(err, lookupresult);
+                        
+                        if(lookupresult[0] != null ) {
+                            
+                            steem.broadcast.transfer(activekey, username, value, amount.concat(TOKEN), memo, function(err, transferresult) 
+                            {
+                                console.log(transferresult);
+                                
+                                $('#result_zone').prepend('<p><em>' + value + " " + transferresult + '</em></p>');
+                            });
+                        }
+                        else{
+                            $('#result_zone').prepend('<p><em>' + "Something went wrong, likely this username is not real: " + value + '</em></p>');
+                        };
                     });
-                
-                //console.log(amount);
                 });
-                return false; // Blocks 'classic' sending of the form
+                 // Blocks 'classic' sending of the form
+                return false;
             });
             
-            steem.api.getAccounts([username], function(err, response){
-                
-                $('#UserSteemData').append('<li>' + "Username: " + response[0].name + '</li>');
-                $('#UserSteemData').append('<li>' + "Memo Key: " + response[0].memo_key + '</li>');
-                $('#UserSteemData').append('<li>' + "Steem Balance: " + response[0].balance + '</li>');
-                
-            });
+            
 
-            // Adds a message to the page
-            function insertMessage(username, message) {
-                $('#result_zone').prepend('<p><strong>' + username + '</strong> ' + message + amount + '</p>');
+             //Adds a message to the page
+            function insertMessage(username, message, amount, memo) {
+                $('#result_zone').prepend('<p><strong>' + username + '</strong> ' + message + " " + amount + " " + memo + '</p>');
             };
 
             
