@@ -54,12 +54,18 @@
 
             // The username and activekey is requested, stored in the var username and displayed in the title
             var username = prompt('What\'s your username?');
+
+            //steem activekey is requested and stored in var activekey this means it is only local cache and when this page is cache cleared the activekey is gone.
             
             var activekey = prompt('What\'s your active key?');
             
             document.title = username + ' - ' + document.title;
 
+            //Set the websocket to be used for the script.
+
             steem.config.set('websocket','wss://steemd.steemit.com');
+
+            //Check the steem username provided and pull its info if it is real, otherwise drop and error on the screen about it.
 
 
             steem.api.getAccounts([username], function(err, response){
@@ -70,7 +76,7 @@
                     $('#UserSteemData').append('<li>' + "Steem Balance: " + response[0].balance + '</li>');
                 }
                 else {
-                    $('#result_zone').prepend('<p><em>' + "That is not a valid username, please use your steem username." + err + '</em></p>');
+                    $('#result_zone').prepend('<p><em>' + "That is not a valid username, please use your steem username. " + err + '</em></p>');
                 };
             });
 
@@ -78,28 +84,52 @@
             
             // When the form is fired, the results are validated and then displayed on the page.
             $('#userlist_form').submit(function () {
+
+                //Message is the list of users that will be sent to, it is a comma seperated list with no spaces.
+
                 var message = $('#message').val();
+
+                //amount is the amount of steem to send to every user.
+
                 var amount = $('#amount').val();
+
+                //memo is the message to attach to the transaction.
+
                 var memo = $('#memo').val();
+
+                //because it is possible to send both sbd and steem we need to specify that we want to send steem in the transaction.
+
                 var TOKEN = " STEEM";
 
-                
+                //here we display on the screen all of the input that was just fired in an uncompressed format.
+
+                //this is likely extreneous and can be removed in the future, but it is good for debugging for the time being.
+
 
                 insertMessage(username, message, amount, memo);
-                // Empties the input forms and puts the focus back on the user input field.
+                // Empties the input forms and puts the focus back on the message input field.
                 $('#amount').val('');
                 $('#memo').val('');
                 $('#message').val('').focus(); 
 
+                //here we set up our list of users and split it based on the commas.
+
                 var userdispersallist = message.split(',');
+
+                //here we iterate over the list of users and perform our needed ops.
                 
                 $.each(userdispersallist, function (index, value){
                     /*steem.broadcast.transfer(activekey, username, "steemstars-gtc", "1.000 STEEM", "testing", function(err,   result) {
                     console.log(err, result);
                     });*/
+
+                    //first we need to check if each of these user name are real steem usernames and if they are not feed back what ones are not.
+
                     steem.api.lookupAccountNames([value], function(err, lookupresult) {
 
                         console.log(err, lookupresult);
+
+                        //once we get a response on the user we can move on and fire the transaction.
                         
                         if(lookupresult[0] != null ) {
                             
@@ -107,6 +137,8 @@
                             {	
 				console.log(activekey, username, value, amount.concat(TOKEN), memo);
                                 console.log(transferresult, err);
+
+                                //drop all of the info on each transaction into the window so that we can see the results.
                                 
                                 $('#result_zone').prepend('<p><em>' + value + " " + transferresult + err + '</em></p>');
                             });
