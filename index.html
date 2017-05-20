@@ -18,9 +18,10 @@
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 
         <!--Remove comment and comment out other source to use node modules lib
-        <script src="./node_modules/steem/dist/steem.min.js"></script>
-        -->
         <script src="./steem.min.js"></script>
+        -->
+        
+	<script src="./node_modules/steem/dist/steem.min.js"></script>
 
     </head>
  
@@ -54,11 +55,11 @@
             // The username and activekey is requested, stored in the var username and displayed in the title
             var username = prompt('What\'s your username?');
             
-            var activekey =prompt('What\'s your active key?');
+            var activekey = prompt('What\'s your active key?');
             
             document.title = username + ' - ' + document.title;
 
-            steem.config.set('websocket','wss://node.steem.ws');
+            steem.config.set('websocket','wss://steemd.steemit.com');
 
 
             steem.api.getAccounts([username], function(err, response){
@@ -69,7 +70,7 @@
                     $('#UserSteemData').append('<li>' + "Steem Balance: " + response[0].balance + '</li>');
                 }
                 else {
-                    $('#result_zone').prepend('<p><em>' + "That is not a valid username, please use your steem username." + '</em></p>');
+                    $('#result_zone').prepend('<p><em>' + "That is not a valid username, please use your steem username." + err + '</em></p>');
                 };
             });
 
@@ -103,14 +104,15 @@
                         if(lookupresult[0] != null ) {
                             
                             steem.broadcast.transfer(activekey, username, value, amount.concat(TOKEN), memo, function(err, transferresult) 
-                            {
-                                console.log(transferresult);
+                            {	
+				console.log(activekey, username, value, amount.concat(TOKEN), memo);
+                                console.log(transferresult, err);
                                 
-                                $('#result_zone').prepend('<p><em>' + value + " " + transferresult + '</em></p>');
+                                $('#result_zone').prepend('<p><em>' + value + " " + transferresult + err + '</em></p>');
                             });
                         }
                         else{
-                            $('#result_zone').prepend('<p><em>' + "Something went wrong, likely this username is not real: " + value + '</em></p>');
+                            $('#result_zone').prepend('<p><em>' + "Something went wrong, likely this username is not real: " + value + err + '</em></p>');
                         };
                     });
                 });
