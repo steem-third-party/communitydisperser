@@ -6,6 +6,7 @@
         <h1 id="UserHeader"></h1>
         <title>Community Disperser!</title>
         <ul id="UserSteemData"><h1>User Information:</h1></ul>
+        <h1 id="NodeData"></h1>
         <center>
         <style>
             #result_zone strong {
@@ -22,14 +23,15 @@
                 background-color: green;
                 margin: 5px;
             }
+            #NodeData {
+                margin: 20px;
+                background-color: green;
+            }
         </style>
 
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 
-        <!--Remove comment and comment out other source to use node modules lib
-        <script src="./node_modules/steem/dist/steem.min.js"></script>
-        -->
-        <script src="./steem.min.js"></script>
+        <script src="https://cdn.steemjs.com/lib/latest/steem.min.js"></script>
 	
 
     </head>
@@ -73,6 +75,12 @@
             //Set the websocket to be used for the script.
 
             steem.config.set('websocket','wss://steemd.steemit.com');
+
+            //Ping the node for the latest block, this help verify connectivity.
+
+            steem.api.streamBlockAsync(function(err, t) {
+                $('#NodeData').replaceWith("<p id='NodeData'>Current block time is: " + t.timestamp + " The Node you are on is: wss://steemd.steemit.com" + "</p>");
+            })
 
             //Check the steem username provided and pull its info if it is real, otherwise drop and error on the screen about it.
 
