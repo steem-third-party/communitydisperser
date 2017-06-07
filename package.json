@@ -9,6 +9,6 @@
   "author": "steem third party",
   "license": "CC0",
   "dependencies": {
-    "steem": "^0.5.5"
+    "steem": "^0.5.13"
   }
 }
